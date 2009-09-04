@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<swg_modlist_file_v1 xmlns="urn:de.direct-netware.xmlns:swg.modlist.v1">
+<mod module='otp' function='otp' />
+</swg_modlist_file_v1>

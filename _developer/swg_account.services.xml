@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<swg_services_file_v1 xmlns="urn:de.direct-netware.xmlns:swg.services.v1">
+ <account>
+  <status_otp active='1' position='12' lang=''>
+   <title value='One-time-password list' />
+   <description value='Check the current state of your one-time-passwords and create a new list.' />
+   <image value='list_account_otp.png' />
+   <link value='m=account&amp;s=status_otp' type='url0' />
+   <guests value='0' />
+   <members value='1' />
+   <group_right value='0' />
+  </status_otp>
+ </account>
+</swg_services_file_v1>
