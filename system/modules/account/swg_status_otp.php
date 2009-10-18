@@ -116,7 +116,7 @@ case "list-save":
 	}
 
 	$direct_classes['basic_functions']->require_file ($direct_settings['path_system']."/classes/swg_formbuilder.php");
-	$direct_classes['basic_functions']->require_file ($direct_settings['path_system']."/functions/swg_tmp_storager.php");
+	$direct_classes['basic_functions']->require_file ($direct_settings['path_system']."/functions/swg_evar_storager.php");
 	direct_local_integration ("account");
 
 	direct_class_init ("formbuilder");
@@ -125,7 +125,7 @@ case "list-save":
 	$direct_classes['output']->options_insert (2,"servicemenu","m=account&a=services",(direct_local_get ("core_back")),$direct_settings['serviceicon_default_back'],"url0");
 
 	if ($direct_settings['account_otp_password_min'] < $direct_settings['users_password_min']) { $direct_settings['account_otp_password_min'] = $direct_settings['users_password_min']; }
-	$g_otp_array = direct_tmp_storage_get ("evars",$direct_settings['user']['id'],"e268443e43d93dab7ebef303bbe9642f","otp_list");
+	$g_otp_array = direct_evar_storage_get ($direct_settings['user']['id'],"e268443e43d93dab7ebef303bbe9642f","otp_list");
 	// md5 ("account")
 
 	if ($g_mode_save) { $direct_cachedata['i_aotp_entries'] = (isset ($GLOBALS['i_aotp_entries']) ? ($direct_classes['basic_functions']->inputfilter_number ($GLOBALS['i_aotp_entries'])) : ""); }
@@ -133,11 +133,10 @@ case "list-save":
 
 	if ($g_otp_array)
 	{
-		$direct_cachedata['i_ainfo_1'] = count ($g_otp_array);
+		$direct_cachedata['i_ainfo_1'] = count ($g_otp_array['account_otp_list']);
 
 		if (isset ($g_otp_array['account_otp_failed_stats']))
 		{
-			$direct_cachedata['i_ainfo_1']--;
 			$direct_cachedata['i_ainfo_2'] = $g_otp_array['account_otp_failed_stats']['wrong_passwords'];
 			$direct_cachedata['i_ainfo_3'] = $direct_classes['basic_functions']->datetime ("longdate&time",$g_otp_array['account_otp_failed_stats']['latest'],$direct_settings['user']['timezone'],(direct_local_get ("datetime_dtconnect")));
 		}
@@ -173,7 +172,8 @@ Save data edited
 		direct_output_theme_subtype ("printview");
 
 		$direct_cachedata['output_otp_list'] = array ();
-		$g_otp_array = array ();
+		$g_update_check = ($g_otp_array ? true : false);
+		$g_otp_array = array ("account_otp_list" => array ());
 
 		for ($g_i = 0;$g_i < $direct_cachedata['i_aotp_entries'];$g_i++)
 		{
@@ -182,10 +182,10 @@ Save data edited
 			$g_otp_password = substr ($g_otp_password,$g_otp_password_offset,$direct_settings['account_otp_password_min']);
 
 			$direct_cachedata['output_otp_list'][] = $g_otp_password;
-			$g_otp_array[] = $direct_classes['basic_functions']->tmd5 ($g_otp_password,$direct_settings['account_password_bytemix']);
+			$g_otp_array['account_otp_list'][] = $direct_classes['basic_functions']->tmd5 ($g_otp_password,$direct_settings['account_password_bytemix']);
 		}
 
-		direct_tmp_storage_write ($g_otp_array,$direct_settings['user']['id'],"e268443e43d93dab7ebef303bbe9642f","otp_list","evars",$direct_cachedata['core_time'],($direct_cachedata['core_time'] + $direct_settings['account_otp_list_lifetime']));
+		direct_evar_storage_write ($g_otp_array,$direct_settings['user']['id'],"e268443e43d93dab7ebef303bbe9642f","otp_list",$direct_cachedata['core_time'],($direct_cachedata['core_time'] + $direct_settings['account_otp_list_lifetime']),$g_update_check);
 		// md5 ("account")
 
 		direct_output_related_manager ("account_status_otp_list_form_save","post_module_service_action");

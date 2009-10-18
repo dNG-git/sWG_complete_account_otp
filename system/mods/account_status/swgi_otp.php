@@ -143,18 +143,25 @@ function direct_mods_account_status_otp_login_process ($f_data)
 
 	$f_return = ($f_data[0] ? $f_data[0] : false);
 
-	if (($direct_settings['account_otp'])&&(!$f_return)&&(is_array ($f_data[1]))&&($direct_classes['basic_functions']->include_file ($direct_settings['path_system']."/functions/swg_tmp_storager.php")))
+	if (($direct_settings['account_otp'])&&(!$f_return)&&(is_array ($f_data[1]))&&($direct_classes['basic_functions']->include_file ($direct_settings['path_system']."/functions/swg_evar_storager.php")))
 	{
-		$f_otp_array = direct_tmp_storage_get ("evars",$f_data[1]['ddbusers_id'],"e268443e43d93dab7ebef303bbe9642f","otp_list");
+		$f_otp_array = direct_evar_storage_get ($f_data[1]['ddbusers_id'],"e268443e43d93dab7ebef303bbe9642f","otp_list");
 		// md5 ("account")
 
-		if ((is_array ($f_otp_array))&&(isset ($f_otp_array[$direct_cachedata['i_aotpposition']])))
+		if ((is_array ($f_otp_array))&&(isset ($f_otp_array['account_otp_list'],$f_otp_array['account_otp_list'][$direct_cachedata['i_aotpposition']])))
 		{
-			$f_otp_password = $f_otp_array[$direct_cachedata['i_aotpposition']];
-			unset ($f_otp_array[$direct_cachedata['i_aotpposition']]);
-			direct_tmp_storage_write ($f_otp_array,$f_data[1]['ddbusers_id'],"e268443e43d93dab7ebef303bbe9642f","otp_list","evars",$direct_cachedata['core_time'],($direct_cachedata['core_time'] + $direct_settings['account_otp_list_lifetime']));
+			$f_otp_password = $f_otp_array['account_otp_list'][$direct_cachedata['i_aotpposition']];
+			unset ($f_otp_array['account_otp_list'][$direct_cachedata['i_aotpposition']]);
 
 			if ($direct_cachedata['i_apassword'] == $f_otp_password) { $f_return = true; }
+			elseif (isset ($f_otp_array['account_otp_failed_stats']))
+			{
+				$f_otp_array['account_otp_failed_stats']['wrong_passwords'] = 1 + $f_otp_array['account_otp_failed_stats']['wrong_passwords'];
+				$f_otp_array['account_otp_failed_stats']['latest'] = $direct_cachedata['core_time'];
+			}
+			else { $f_otp_array['account_otp_failed_stats'] = array ("wrong_passwords" => 1,"latest" => $direct_cachedata['core_time']); }
+
+			direct_evar_storage_write ($f_otp_array,$f_data[1]['ddbusers_id'],"e268443e43d93dab7ebef303bbe9642f","otp_list",$direct_cachedata['core_time'],($direct_cachedata['core_time'] + $direct_settings['account_otp_list_lifetime']),true);
 		}
 	}
 
